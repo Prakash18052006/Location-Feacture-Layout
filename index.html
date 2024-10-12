@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Form</title>
+    <script>
+        function fetchOptions(endpoint, params, targetId, defaultOption) {
+            const xhttp = new XMLHttpRequest();
+            xhttp.onload = function() {
+                const data = JSON.parse(this.responseText);
+                const target = document.getElementById(targetId);
+                target.innerHTML = '<option value="">-- Select --</option>';
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    target.appendChild(option);
+                });
+                if (defaultOption) {
+                    target.value = defaultOption;
+                }
+            };
+            xhttp.open("GET", endpoint + "?" + new URLSearchParams(params).toString(), true);
+            xhttp.send();
+        }
+
+        function loadDistricts() {
+            const stateId = document.getElementById('state').value;
+            if (stateId) {
+                fetchOptions('get_districts.php', { state_id: stateId }, 'district');
+                document.getElementById('village').innerHTML = '<option value="">-- Select --</option>'; // Clear village dropdown
+            }
+        }
+
+        function loadVillages() {
+            const districtId = document.getElementById('district').value;
+            if (districtId) {
+                fetchOptions('get_villages.php', { district_id: districtId }, 'village');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchOptions('get_states.php', {}, 'state');
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Sample Form</h2>
+        <form action="submit_sample.php" method="POST">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number:</label>
+                <input type="text" id="phone" name="phone" required>
+            </div>
+
+            <div class="form-group">
+                <label for="state">State:</label>
+                <select id="state" name="state" onchange="loadDistricts()" required>
+                    <option value="">-- Select State --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="district">District:</label>
+                <select id="district" name="district" onchange="loadVillages()" required>
+                    <option value="">-- Select District --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="village">Village:</label>
+                <select id="village" name="village" required>
+                    <option value="">-- Select Village --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="proper_location">Proper Location (Town):</label>
+                <textarea id="proper_location" name="proper_location" required></textarea>
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>
